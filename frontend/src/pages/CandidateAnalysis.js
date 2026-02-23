@@ -46,6 +46,29 @@ const CandidateAnalysis = () => {
     fetchCandidate();
   }, [fetchCandidate]);
 
+  // Sync admin notes when candidate loads
+  useEffect(() => {
+    if (candidate) {
+      setAdminNotes(candidate.admin_notes || '');
+    }
+  }, [candidate]);
+
+  // Save admin notes
+  const handleSaveNotes = async () => {
+    setSavingNotes(true);
+    setNotesSaved(false);
+    try {
+      await axios.put(`${API}/candidates/${id}`, { admin_notes: adminNotes });
+      setCandidate({...candidate, admin_notes: adminNotes});
+      setNotesSaved(true);
+      setTimeout(() => setNotesSaved(false), 2000);
+    } catch (err) {
+      setError('Failed to save notes');
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
   // NEW: Calculate algorithmic score
   const handleCalculateScore = async () => {
     setScoring(true);
