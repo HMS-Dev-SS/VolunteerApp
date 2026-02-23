@@ -1,25 +1,27 @@
-from google import genai
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 import os
 import json
 from typing import Dict, Any
 import logging
 import re
+from dotenv import load_dotenv
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
 class SmartParseService:
     def __init__(self):
-        self.api_key = os.environ.get('GEMINI_API_KEY')
-        if self.api_key:
-            self.client = genai.Client(api_key=self.api_key)
-        else:
-            logger.warning("No GEMINI_API_KEY found - Smart Parse will not work")
-            self.client = None
+        self.api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not self.api_key:
+            logger.warning("No EMERGENT_LLM_KEY found - Smart Parse will not work")
     
     async def parse_unstructured_text(self, raw_text: str) -> Dict[str, Any]:
         """Extract structured candidate data from WhatsApp/DM dump"""
         
-        if not self.client:
+        if not self.api_key:
             return self._default_response(raw_text, "No AI model configured")
         
         prompt = f"""You are a data extraction specialist. Extract candidate information from this text:
@@ -52,11 +54,16 @@ Respond ONLY with valid JSON:
 }}"""
 
         try:
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-            response_text = response.text.strip()
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id="smart-parse-session",
+                system_message="You are a data extraction specialist. Always respond with valid JSON only."
+            ).with_model("gemini", "gemini-2.5-flash")
+            
+            user_message = UserMessage(text=prompt)
+            response = await chat.send_message(user_message)
+            
+            response_text = response.strip()
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
