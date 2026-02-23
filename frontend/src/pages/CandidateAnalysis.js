@@ -222,16 +222,33 @@ const CandidateAnalysis = () => {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-3">Admin Notes</h3>
             <textarea
-              value={candidate.admin_notes || ''}
-              onChange={async (e) => {
-                setCandidate({...candidate, admin_notes: e.target.value});
-                // Auto-save
-                await axios.put(`${API}/candidates/${id}`, { admin_notes: e.target.value });
+              value={adminNotes}
+              onChange={(e) => {
+                setAdminNotes(e.target.value);
+                setNotesSaved(false);
               }}
               rows="4"
               className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-cyan-400 focus:outline-none"
               placeholder="Add notes about this candidate..."
+              data-testid="admin-notes-textarea"
             />
+            <div className="mt-3 flex items-center space-x-3">
+              <button
+                onClick={handleSaveNotes}
+                disabled={savingNotes || adminNotes === (candidate?.admin_notes || '')}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  notesSaved 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+                data-testid="save-notes-btn"
+              >
+                {savingNotes ? 'Saving...' : notesSaved ? '✓ Saved!' : 'Save Notes'}
+              </button>
+              {adminNotes !== (candidate?.admin_notes || '') && !notesSaved && (
+                <span className="text-sm text-amber-600">Unsaved changes</span>
+              )}
+            </div>
           </div>
         </div>
 
