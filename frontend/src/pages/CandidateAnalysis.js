@@ -19,6 +19,9 @@ const CandidateAnalysis = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [reEvaluating, setReEvaluating] = useState(false);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSaved, setNotesSaved] = useState(false);
 
   const fetchCandidate = useCallback(async () => {
     try {
