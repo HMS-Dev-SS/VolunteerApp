@@ -210,6 +210,59 @@ const CandidateAnalysis = () => {
             </div>
           </div>
 
+          {/* Influencer Metrics - Only show if creator */}
+          {candidate.is_creator && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Influencer Metrics</h3>
+              <p className="text-sm text-gray-500 mb-4">Enter verified follower/engagement data to improve scoring accuracy</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Instagram Followers</label>
+                  <input
+                    type="number"
+                    value={candidate.instagram_followers || ''}
+                    onChange={async (e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : null;
+                      setCandidate({...candidate, instagram_followers: value});
+                      await axios.put(`${API}/candidates/${id}`, { instagram_followers: value });
+                    }}
+                    placeholder="e.g., 50000"
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-cyan-400 focus:outline-none"
+                    data-testid="instagram-followers-input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Engagement Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={candidate.instagram_engagement || ''}
+                    onChange={async (e) => {
+                      const value = e.target.value ? parseFloat(e.target.value) : null;
+                      setCandidate({...candidate, instagram_engagement: value});
+                      await axios.put(`${API}/candidates/${id}`, { instagram_engagement: value });
+                    }}
+                    placeholder="e.g., 3.5"
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-cyan-400 focus:outline-none"
+                    data-testid="instagram-engagement-input"
+                  />
+                </div>
+                <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                  <p className="font-semibold mb-1">Scoring Tiers:</p>
+                  <ul className="space-y-1">
+                    <li>• 100k+ followers: +25 (High Impact)</li>
+                    <li>• 50k-100k: +20 (Established)</li>
+                    <li>• 10k-50k: +15 (Growing)</li>
+                    <li>• 5k-10k: +10 (Emerging)</li>
+                    <li>• 1k-5k: +5 (Micro)</li>
+                    <li>• &lt;1k: -10 (Low reach)</li>
+                    <li className="text-red-600">• High followers + low engagement: -15 (Vanity Trap)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Why Volunteer */}
           {candidate.why_volunteer && (
             <div className="bg-white rounded-xl shadow-lg p-6">
