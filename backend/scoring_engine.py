@@ -195,13 +195,53 @@ class ScoringEngine:
             
             # Instagram link provided (required for creators)
             if instagram and instagram.strip():
-                score += 15
-                reasons.append("Instagram link provided (+15)")
+                score += 10
+                reasons.append("Instagram link provided (+10)")
             
             # Portfolio link (bonus)
             if portfolio and portfolio.strip():
                 score += 10
                 reasons.append("Portfolio link provided (+10)")
+            
+            # Follower-based scoring (if follower count is provided)
+            if followers and followers > 0:
+                if followers >= 100000:
+                    # 100k+ = High Impact Creator
+                    score += 25
+                    reasons.append(f"High Impact Creator ({followers:,} followers) (+25)")
+                elif followers >= 50000:
+                    # 50k-100k = Established Creator
+                    score += 20
+                    reasons.append(f"Established Creator ({followers:,} followers) (+20)")
+                elif followers >= 10000:
+                    # 10k-50k = Growing Creator
+                    score += 15
+                    reasons.append(f"Growing Creator ({followers:,} followers) (+15)")
+                elif followers >= 5000:
+                    # 5k-10k = Emerging Creator
+                    score += 10
+                    reasons.append(f"Emerging Creator ({followers:,} followers) (+10)")
+                elif followers >= 1000:
+                    # 1k-5k = Micro Creator (neutral)
+                    score += 5
+                    reasons.append(f"Micro Creator ({followers:,} followers) (+5)")
+                else:
+                    # Under 1k = Low reach, needs manual review
+                    score -= 10
+                    reasons.append(f"Low reach ({followers:,} followers) - needs verification (-10)")
+            
+            # Engagement-based adjustments
+            if followers and followers > 0 and engagement and engagement > 0:
+                if engagement >= 5.0:
+                    score += 10
+                    reasons.append(f"Excellent engagement ({engagement}%) (+10)")
+                elif engagement >= 3.0:
+                    score += 5
+                    reasons.append(f"Good engagement ({engagement}%) (+5)")
+                elif engagement < 1.0 and followers > 10000:
+                    # The Vanity Trap - high followers but very low engagement
+                    score -= 15
+                    reasons.append(f"Vanity Trap: {followers:,} followers but only {engagement}% engagement (-15)")
             
             # Gear/tools mentioned in skills/why_volunteer
             gear_found = [g for g in CONTENT_CREATOR_GEAR if g in text]
@@ -213,17 +253,12 @@ class ScoringEngine:
             creator_skills = ["video", "photo", "edit", "content", "reel", "youtube", "vlog", "design", "graphic"]
             skills_found = [s for s in creator_skills if s in text]
             if skills_found:
-                score += 10
-                reasons.append(f"Creator skills: {', '.join(skills_found[:3])} (+10)")
+                score += 5
+                reasons.append(f"Creator skills: {', '.join(skills_found[:3])} (+5)")
             
-            # The Delusion Filter - claims creator but no proof
+            # The Delusion Filter - claims creator but no proof at all
             if is_creator and not instagram and not portfolio:
                 penalty = (50, "Creator with no proof - Delusion Filter (-50)")
-            
-            # The Vanity Trap - high followers but low engagement
-            if followers > 50000 and engagement < 1.0:
-                score -= 10
-                reasons.append(f"High followers ({followers:,}) but low engagement ({engagement}%) - Vanity Trap (-10)")
         
         elif 'community' in role or 'manager' in role:
             # Community Manager scoring
