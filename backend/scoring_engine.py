@@ -192,20 +192,35 @@ class ScoringEngine:
         
         if 'content' in role or 'creator' in role or is_creator:
             # Content Creator scoring
+            
+            # Instagram link provided (required for creators)
+            if instagram and instagram.strip():
+                score += 15
+                reasons.append("Instagram link provided (+15)")
+            
+            # Portfolio link (bonus)
+            if portfolio and portfolio.strip():
+                score += 10
+                reasons.append("Portfolio link provided (+10)")
+            
+            # Gear/tools mentioned in skills/why_volunteer
             gear_found = [g for g in CONTENT_CREATOR_GEAR if g in text]
             if gear_found:
                 score += 10
                 reasons.append(f"Gear mentioned: {', '.join(gear_found)} (+10)")
             
-            if portfolio and portfolio.strip():
-                score += 15
-                reasons.append("Portfolio link provided (+15)")
+            # Creator-specific skills detection
+            creator_skills = ["video", "photo", "edit", "content", "reel", "youtube", "vlog", "design", "graphic"]
+            skills_found = [s for s in creator_skills if s in text]
+            if skills_found:
+                score += 10
+                reasons.append(f"Creator skills: {', '.join(skills_found[:3])} (+10)")
             
-            # The Delusion Filter
+            # The Delusion Filter - claims creator but no proof
             if is_creator and not instagram and not portfolio:
                 penalty = (50, "Creator with no proof - Delusion Filter (-50)")
             
-            # The Vanity Trap
+            # The Vanity Trap - high followers but low engagement
             if followers > 50000 and engagement < 1.0:
                 score -= 10
                 reasons.append(f"High followers ({followers:,}) but low engagement ({engagement}%) - Vanity Trap (-10)")
