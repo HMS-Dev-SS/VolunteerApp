@@ -9,6 +9,11 @@ Pulled the complete codebase from GitHub repository (https://github.com/HMS-Dev-
 2. Configured environment variables properly
 3. Ensured all backend services and frontend pages work correctly
 
+## Deployment Status (Feb 23, 2026)
+- **Emergent Preview** (https://reveal-ai-fix.preview.emergentagent.com): ✅ All features working
+- **Render Instance 1** (https://volunteerapp-1.onrender.com): ✅ All features working
+- **Render Instance 2** (https://volunteerapp-nfbu.onrender.com): ⚠️ Backend-only (no frontend)
+
 ## Architecture
 
 ### Tech Stack
