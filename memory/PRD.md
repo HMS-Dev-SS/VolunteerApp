@@ -68,6 +68,7 @@ Pulled the complete codebase from GitHub repository (https://github.com/HMS-Dev-
 - [x] Candidate list with filters (Feb 23, 2026)
 - [x] Settings page for weight configuration (Feb 23, 2026)
 - [x] Smart Parse functionality (Feb 23, 2026)
+- [x] Admin Notes Save button with visual feedback (Feb 23, 2026)
 
 ## API Endpoints
 - `POST /api/public/verify-code` - Verify access code
