@@ -224,18 +224,22 @@ class ScoringEngine:
                     reasons.append(f"Creator with {followers:,} followers (+{follower_score})")
                 score += follower_score
             
-            # Engagement-based adjustments
-            if followers and followers > 0 and engagement and engagement > 0:
-                if engagement >= 5.0:
+            # Engagement-based adjustments (picklist: bad, average, good, great)
+            # bad=-10, average=0, good=+5, great=+10
+            if engagement:
+                engagement_lower = str(engagement).lower().strip()
+                if engagement_lower == 'great':
                     score += 10
-                    reasons.append(f"Excellent engagement ({engagement}%) (+10)")
-                elif engagement >= 3.0:
+                    reasons.append("Great engagement (+10)")
+                elif engagement_lower == 'good':
                     score += 5
-                    reasons.append(f"Good engagement ({engagement}%) (+5)")
-                elif engagement < 1.0 and followers > 10000:
-                    # The Vanity Trap - high followers but very low engagement
-                    score -= 15
-                    reasons.append(f"Vanity Trap: {followers:,} followers but only {engagement}% engagement (-15)")
+                    reasons.append("Good engagement (+5)")
+                elif engagement_lower == 'average':
+                    # No change
+                    reasons.append("Average engagement (0)")
+                elif engagement_lower == 'bad':
+                    score -= 10
+                    reasons.append("Bad engagement (-10)")
             
             # Gear/tools mentioned in skills/why_volunteer
             gear_found = [g for g in CONTENT_CREATOR_GEAR if g in text]
