@@ -249,6 +249,28 @@ const CandidateAnalysis = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-3">Influencer Metrics</h3>
               <p className="text-sm text-gray-500 mb-4">Enter verified follower/engagement data to improve scoring accuracy</p>
               <div className="space-y-4">
+                {/* Fetch from Instagram button */}
+                {candidate.instagram && (
+                  <div>
+                    <button
+                      onClick={handleFetchInstagram}
+                      disabled={fetchingIG}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition disabled:opacity-50"
+                      data-testid="fetch-instagram-btn"
+                    >
+                      <Download size={18} />
+                      <span>{fetchingIG ? 'Fetching...' : 'Fetch from Instagram'}</span>
+                    </button>
+                    {igFetchResult && (
+                      <div className={`mt-2 text-sm p-2 rounded ${igFetchResult.success ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                        {igFetchResult.success 
+                          ? `✓ Found ${igFetchResult.followers?.toLocaleString()} followers` 
+                          : `⚠ ${igFetchResult.error} - Enter manually below`}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Instagram Followers</label>
                   <input
