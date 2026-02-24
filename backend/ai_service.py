@@ -20,8 +20,11 @@ class AIAnalysisService:
         else:
             logger.warning("No GEMINI_API_KEY found - AI features will not work")
     
-    def calculate_dynamic_weights(self, duration_days: int) -> Dict[str, int]:
+    def calculate_dynamic_weights(self, duration_days) -> Dict[str, int]:
         """Calculate dynamic weights based on stay duration"""
+        # Handle None duration
+        if duration_days is None:
+            duration_days = 14  # Default to 2 weeks
         if duration_days >= 20:
             return {"vibe_psychology": 50, "skill_competency": 20, "stability_duration": 30}
         elif duration_days < 7:
