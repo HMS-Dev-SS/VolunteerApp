@@ -416,7 +416,7 @@ async def re_evaluate_candidate(candidate_id: str, username: str = Depends(verif
     analysis = await ai_service.re_evaluate_candidate(candidate, prev_eval, new_context, weights)
     
     # Calculate scores
-    actual_weights = ai_service.calculate_dynamic_weights(candidate.get('duration_days', 14))
+    actual_weights = ai_service.calculate_dynamic_weights((candidate.get('duration_days') or 14))
     total_score = int(
         (analysis['vibe_score'] * actual_weights['vibe_psychology'] / 100) +
         (analysis['skill_score'] * actual_weights['skill_competency'] / 100) +
@@ -425,7 +425,7 @@ async def re_evaluate_candidate(candidate_id: str, username: str = Depends(verif
     
     # Determine decision
     is_high_impact = analysis.get('is_high_impact', False)
-    if candidate.get('duration_days', 14) < 7 and not is_high_impact:
+    if (candidate.get('duration_days') or 14) < 7 and not is_high_impact:
         decision = "REJECT"
     elif total_score < 60:
         decision = "REJECT"
@@ -450,7 +450,7 @@ async def re_evaluate_candidate(candidate_id: str, username: str = Depends(verif
         marginal_utility=analysis.get('marginal_utility', 'Medium'),
         roi_logic=analysis.get('roi_logic', '') + f" | RE-EVAL #{iteration}: {analysis.get('changes_from_previous', '')}",
         is_high_impact=is_high_impact,
-        is_collab=is_high_impact and candidate.get('duration_days', 14) < 7,
+        is_collab=is_high_impact and (candidate.get('duration_days') or 14) < 7,
         psychological_profile=analysis['psychological_profile'],
         social_resume_check=analysis['social_resume_check'],
         decision=decision,
@@ -525,8 +525,8 @@ async def analyze_candidate(candidate_id: str, username: str = Depends(verify_to
         logger.info(f"Using CUSTOM weights: {weights}")
     else:
         # Use dynamic weights based on stay duration
-        weights = ai_service.calculate_dynamic_weights(candidate.get('duration_days', 14))
-        logger.info(f"Using DYNAMIC weights for {candidate.get('duration_days', 14)} days: {weights}")
+        weights = ai_service.calculate_dynamic_weights((candidate.get('duration_days') or 14))
+        logger.info(f"Using DYNAMIC weights for {(candidate.get('duration_days') or 14)} days: {weights}")
     
     logger.info(f"Analyzing: {candidate['name']} (Duration: {candidate.get('duration_days', 'Unknown')} days)")
     analysis = await ai_service.analyze_candidate(candidate, weights)
@@ -539,7 +539,7 @@ async def analyze_candidate(candidate_id: str, username: str = Depends(verify_to
     )
     
     is_high_impact = analysis.get('is_high_impact', False)
-    if candidate.get('duration_days', 14) < 7 and not is_high_impact:
+    if (candidate.get('duration_days') or 14) < 7 and not is_high_impact:
         decision = "REJECT"
     elif total_score < 60:
         decision = "REJECT"
@@ -561,7 +561,7 @@ async def analyze_candidate(candidate_id: str, username: str = Depends(verify_to
         marginal_utility=analysis.get('marginal_utility', 'Medium'),
         roi_logic=analysis.get('roi_logic', ''),
         is_high_impact=is_high_impact,
-        is_collab=is_high_impact and candidate.get('duration_days', 14) < 7,
+        is_collab=is_high_impact and (candidate.get('duration_days') or 14) < 7,
         psychological_profile=analysis['psychological_profile'],
         social_resume_check=analysis['social_resume_check'],
         decision=decision,
