@@ -250,12 +250,11 @@ const CandidateAnalysis = () => {
                 <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
                   <p className="font-semibold mb-1">Scoring Tiers:</p>
                   <ul className="space-y-1">
-                    <li>• 100k+ followers: +25 (High Impact)</li>
-                    <li>• 50k-100k: +20 (Established)</li>
-                    <li>• 10k-50k: +15 (Growing)</li>
-                    <li>• 5k-10k: +10 (Emerging)</li>
-                    <li>• 1k-5k: +5 (Micro)</li>
-                    <li>• &lt;1k: -10 (Low reach)</li>
+                    <li>• &lt;1k followers: -10</li>
+                    <li>• 1k-2k: -5</li>
+                    <li>• 2k-4k: 0</li>
+                    <li>• 4k+: +1 per 2k followers</li>
+                    <li className="text-green-600">• Example: 50k = +24 points</li>
                     <li className="text-red-600">• High followers + low engagement: -15 (Vanity Trap)</li>
                   </ul>
                 </div>
