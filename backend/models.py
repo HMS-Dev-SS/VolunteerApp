@@ -156,7 +156,7 @@ class CandidateUpdate(BaseModel):
     end_date: Optional[date] = None
     instagram: Optional[str] = None
     instagram_followers: Optional[int] = None
-    instagram_engagement: Optional[float] = None
+    instagram_engagement: Optional[str] = None  # bad, average, good, great
     portfolio_link: Optional[str] = None
     property_assigned: Optional[str] = None
     manual_tags: Optional[List[str]] = None
