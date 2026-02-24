@@ -71,6 +71,37 @@ const CandidateAnalysis = () => {
     }
   };
 
+  // Fetch Instagram data
+  const handleFetchInstagram = async () => {
+    if (!candidate?.instagram) {
+      setIgFetchResult({ success: false, error: 'No Instagram URL provided' });
+      return;
+    }
+    
+    setFetchingIG(true);
+    setIgFetchResult(null);
+    
+    try {
+      const response = await axios.post(`${API}/instagram/fetch`, {
+        instagram_url: candidate.instagram
+      });
+      
+      if (response.data.success) {
+        // Update candidate with fetched followers
+        const followers = response.data.followers;
+        await axios.put(`${API}/candidates/${id}`, { instagram_followers: followers });
+        setCandidate({...candidate, instagram_followers: followers});
+        setIgFetchResult({ success: true, followers });
+      } else {
+        setIgFetchResult({ success: false, error: response.data.error });
+      }
+    } catch (err) {
+      setIgFetchResult({ success: false, error: 'Failed to fetch Instagram data' });
+    } finally {
+      setFetchingIG(false);
+    }
+  };
+
   // NEW: Calculate algorithmic score
   const handleCalculateScore = async () => {
     setScoring(true);
