@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Brain, Mail, AlertCircle, CheckCircle, XCircle, RefreshCw, Copy, Calculator } from 'lucide-react';
+import { ArrowLeft, Brain, Mail, AlertCircle, CheckCircle, XCircle, RefreshCw, Copy, Calculator, Download } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -22,6 +22,8 @@ const CandidateAnalysis = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
+  const [fetchingIG, setFetchingIG] = useState(false);
+  const [igFetchResult, setIgFetchResult] = useState(null);
 
   const fetchCandidate = useCallback(async () => {
     try {
