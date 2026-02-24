@@ -1,4 +1,4 @@
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from google import genai
 import os
 import json
 from typing import Dict, Any
@@ -13,9 +13,12 @@ logger = logging.getLogger(__name__)
 
 class AIAnalysisService:
     def __init__(self):
-        self.api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not self.api_key:
-            logger.warning("No EMERGENT_LLM_KEY found - AI features will not work")
+        self.api_key = os.environ.get('GEMINI_API_KEY')
+        self.client = None
+        if self.api_key:
+            self.client = genai.Client(api_key=self.api_key)
+        else:
+            logger.warning("No GEMINI_API_KEY found - AI features will not work")
     
     def calculate_dynamic_weights(self, duration_days: int) -> Dict[str, int]:
         """Calculate dynamic weights based on stay duration"""
@@ -29,7 +32,7 @@ class AIAnalysisService:
     async def analyze_candidate(self, candidate_data: Dict[str, Any], weights: Dict[str, int]) -> Dict[str, Any]:
         """Analyze candidate using Gemini with ROI-based economic analysis"""
         
-        if not self.api_key:
+        if not self.client:
             return self._default_analysis("No AI model configured")
         
         prompt = f"""You are the autonomous Volunteer Coordinator AI for Hidden Monkey Stays.
@@ -62,16 +65,12 @@ Respond ONLY with valid JSON:
 }}"""
 
         try:
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"candidate-analysis-{candidate_data.get('id', 'unknown')}",
-                system_message="You are an AI assistant that analyzes volunteer applications. Always respond with valid JSON only."
-            ).with_model("gemini", "gemini-2.5-flash")
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
             
-            user_message = UserMessage(text=prompt)
-            response = await chat.send_message(user_message)
-            
-            response_text = response.strip()
+            response_text = response.text.strip()
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -87,7 +86,7 @@ Respond ONLY with valid JSON:
     async def generate_email(self, candidate_data: Dict[str, Any], evaluation: Dict[str, Any], decision: str, total_score: int, is_high_impact: bool = False) -> Dict[str, str]:
         """Generate role-specific email based on decision"""
         
-        if not self.api_key:
+        if not self.client:
             return {"subject": f"Your Application - {candidate_data.get('name', 'Candidate')}", "body": "Thank you for your application. We will review it shortly."}
         
         prompt = f"""Generate an email for volunteer application:
@@ -106,16 +105,12 @@ Respond ONLY with valid JSON:
 {{"subject": "<email subject>", "body": "<full email body>"}}"""
 
         try:
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"email-gen-{candidate_data.get('id', 'unknown')}",
-                system_message="You are an AI assistant that generates professional emails. Always respond with valid JSON only."
-            ).with_model("gemini", "gemini-2.5-flash")
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
             
-            user_message = UserMessage(text=prompt)
-            response = await chat.send_message(user_message)
-            
-            response_text = response.strip()
+            response_text = response.text.strip()
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -131,7 +126,7 @@ Respond ONLY with valid JSON:
     async def re_evaluate_candidate(self, candidate_data: Dict[str, Any], previous_evaluation: Dict[str, Any], new_context: str, weights: Dict[str, int]) -> Dict[str, Any]:
         """Re-evaluate candidate with new information"""
         
-        if not self.api_key:
+        if not self.client:
             return self._default_analysis("No AI model configured")
         
         prompt = f"""Re-evaluate this volunteer candidate with NEW INFORMATION:
@@ -160,16 +155,12 @@ Update scores based on new info. Respond ONLY with valid JSON:
 }}"""
 
         try:
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"re-eval-{candidate_data.get('id', 'unknown')}",
-                system_message="You are an AI assistant that re-evaluates volunteer applications. Always respond with valid JSON only."
-            ).with_model("gemini", "gemini-2.5-flash")
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
             
-            user_message = UserMessage(text=prompt)
-            response = await chat.send_message(user_message)
-            
-            response_text = response.strip()
+            response_text = response.text.strip()
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
