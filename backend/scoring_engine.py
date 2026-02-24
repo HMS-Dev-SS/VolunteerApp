@@ -204,31 +204,25 @@ class ScoringEngine:
                 reasons.append("Portfolio link provided (+10)")
             
             # Follower-based scoring (if follower count is provided)
+            # <1k: -10, 1k-2k: -5, 2k-4k: 0, 4k+: +1 per 2k
             if followers and followers > 0:
-                if followers >= 100000:
-                    # 100k+ = High Impact Creator
-                    score += 25
-                    reasons.append(f"High Impact Creator ({followers:,} followers) (+25)")
-                elif followers >= 50000:
-                    # 50k-100k = Established Creator
-                    score += 20
-                    reasons.append(f"Established Creator ({followers:,} followers) (+20)")
-                elif followers >= 10000:
-                    # 10k-50k = Growing Creator
-                    score += 15
-                    reasons.append(f"Growing Creator ({followers:,} followers) (+15)")
-                elif followers >= 5000:
-                    # 5k-10k = Emerging Creator
-                    score += 10
-                    reasons.append(f"Emerging Creator ({followers:,} followers) (+10)")
-                elif followers >= 1000:
-                    # 1k-5k = Micro Creator (neutral)
-                    score += 5
-                    reasons.append(f"Micro Creator ({followers:,} followers) (+5)")
+                if followers < 1000:
+                    # Under 1k = Low reach
+                    follower_score = -10
+                    reasons.append(f"Low reach ({followers:,} followers) (-10)")
+                elif followers < 2000:
+                    # 1k-2k = Very small audience
+                    follower_score = -5
+                    reasons.append(f"Small audience ({followers:,} followers) (-5)")
+                elif followers < 4000:
+                    # 2k-4k = Neutral
+                    follower_score = 0
+                    reasons.append(f"Modest audience ({followers:,} followers) (0)")
                 else:
-                    # Under 1k = Low reach, needs manual review
-                    score -= 10
-                    reasons.append(f"Low reach ({followers:,} followers) - needs verification (-10)")
+                    # 4k+: +1 point per 2k followers
+                    follower_score = (followers - 4000) // 2000 + 1
+                    reasons.append(f"Creator with {followers:,} followers (+{follower_score})")
+                score += follower_score
             
             # Engagement-based adjustments
             if followers and followers > 0 and engagement and engagement > 0:
