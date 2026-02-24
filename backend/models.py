@@ -110,7 +110,7 @@ class Candidate(BaseModel):
     is_creator: bool = False
     instagram: Optional[str] = None
     instagram_followers: Optional[int] = None
-    instagram_engagement: Optional[float] = None  # percentage
+    instagram_engagement: Optional[str] = None  # bad, average, good, great
     portfolio_link: Optional[str] = None
     
     # Skills & Role
