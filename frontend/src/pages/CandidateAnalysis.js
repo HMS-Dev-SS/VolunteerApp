@@ -306,14 +306,14 @@ const CandidateAnalysis = () => {
                   </select>
                 </div>
                 <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-                  <p className="font-semibold mb-1">Scoring Tiers:</p>
+                  <p className="font-semibold mb-1">Scoring:</p>
                   <ul className="space-y-1">
-                    <li>• &lt;1k followers: -10</li>
-                    <li>• 1k-2k: -5</li>
-                    <li>• 2k-4k: 0</li>
+                    <li className="font-semibold">Followers:</li>
+                    <li>• &lt;1k: -10 | 1k-2k: -5 | 2k-4k: 0</li>
                     <li>• 4k+: +1 per 2k followers</li>
-                    <li className="text-green-600">• Example: 50k = +24 points</li>
-                    <li className="text-red-600">• High followers + low engagement: -15 (Vanity Trap)</li>
+                    <li className="font-semibold mt-2">Engagement:</li>
+                    <li>• Great: +10 | Good: +5</li>
+                    <li>• Average: 0 | Bad: -10</li>
                   </ul>
                 </div>
               </div>
