@@ -771,6 +771,101 @@ app.add_middleware(
 if LOCAL_STORAGE_PATH.exists():
     app.mount("/uploads", StaticFiles(directory=str(LOCAL_STORAGE_PATH)), name="uploads")
 
+# ============= Instagram Scraper =============
+import httpx
+import re as regex
+
+@app.post("/api/instagram/fetch")
+async def fetch_instagram_data(data: dict = Body(...), username: str = Depends(verify_token)):
+    """Fetch public Instagram profile data (followers, posts)"""
+    instagram_url = data.get("instagram_url", "")
+    
+    if not instagram_url:
+        raise HTTPException(status_code=400, detail="Instagram URL required")
+    
+    # Extract username from URL
+    # Handles: instagram.com/username, instagram.com/username/, @username
+    match = regex.search(r'(?:instagram\.com/|@)([a-zA-Z0-9_.]+)', instagram_url)
+    if not match:
+        # Try if it's just a username
+        match = regex.match(r'^([a-zA-Z0-9_.]+)$', instagram_url.strip())
+    
+    if not match:
+        raise HTTPException(status_code=400, detail="Could not extract Instagram username")
+    
+    ig_username = match.group(1).rstrip('/')
+    
+    try:
+        # Try to fetch Instagram profile page
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+            }
+            response = await client.get(f"https://www.instagram.com/{ig_username}/", headers=headers, follow_redirects=True)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": "Profile not accessible", "manual_required": True}
+            
+            html = response.text
+            
+            # Try to extract follower count from meta tags or embedded JSON
+            followers = None
+            
+            # Method 1: Look for meta description with follower count
+            meta_match = regex.search(r'(\d+(?:,\d+)*(?:\.\d+)?[KkMm]?)\s*Followers', html)
+            if meta_match:
+                followers_str = meta_match.group(1).replace(',', '')
+                # Convert K/M to numbers
+                if 'K' in followers_str.upper():
+                    followers = int(float(followers_str.upper().replace('K', '')) * 1000)
+                elif 'M' in followers_str.upper():
+                    followers = int(float(followers_str.upper().replace('M', '')) * 1000000)
+                else:
+                    followers = int(float(followers_str))
+            
+            # Method 2: Try to find in JSON-LD or embedded data
+            if not followers:
+                json_match = regex.search(r'"edge_followed_by":\s*{\s*"count":\s*(\d+)', html)
+                if json_match:
+                    followers = int(json_match.group(1))
+            
+            # Method 3: Try og:description meta tag
+            if not followers:
+                og_match = regex.search(r'<meta[^>]*property=["\']og:description["\'][^>]*content=["\']([^"\']*)["\']', html)
+                if og_match:
+                    desc = og_match.group(1)
+                    num_match = regex.search(r'(\d+(?:,\d+)*(?:\.\d+)?[KkMm]?)\s*Followers', desc)
+                    if num_match:
+                        followers_str = num_match.group(1).replace(',', '')
+                        if 'K' in followers_str.upper():
+                            followers = int(float(followers_str.upper().replace('K', '')) * 1000)
+                        elif 'M' in followers_str.upper():
+                            followers = int(float(followers_str.upper().replace('M', '')) * 1000000)
+                        else:
+                            followers = int(float(followers_str))
+            
+            if followers:
+                return {
+                    "success": True,
+                    "username": ig_username,
+                    "followers": followers,
+                    "manual_required": False
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Could not extract follower count (profile may be private)",
+                    "manual_required": True
+                }
+                
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Request timed out", "manual_required": True}
+    except Exception as e:
+        logger.error(f"Instagram fetch error: {str(e)}")
+        return {"success": False, "error": "Failed to fetch profile", "manual_required": True}
+
 # Serve React frontend static files (for Render Web Service deployment)
 FRONTEND_BUILD_PATH = Path(__file__).parent.parent / 'frontend' / 'build'
 if FRONTEND_BUILD_PATH.exists():
