@@ -468,7 +468,12 @@ class HiddenMonkeyAPITester:
             self.print_summary()
             return False
         
-        # Test protected endpoints
+        # Test Smart Parse endpoints (the bug fix target)
+        print("\n🎯 Testing Smart Parse Functionality (Bug Fix Target)...")
+        self.test_smart_parse_endpoint()
+        self.test_smart_parse_confirm_endpoint()
+        
+        # Test other protected endpoints
         self.test_ai_analysis_endpoint()
         self.test_re_evaluate_endpoint() 
         self.test_calculate_score_endpoint()
