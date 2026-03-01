@@ -89,8 +89,9 @@ const SmartParse = () => {
       ) : (
         <div className="bg-white rounded-xl shadow-lg p-8">
           {success && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-              <p className="text-green-700 font-semibold">✓ Candidate created successfully!</p>
+            <div className="bg-green-100 border-2 border-green-500 rounded-lg p-6 mb-6 text-center animate-pulse">
+              <p className="text-green-700 font-bold text-xl">✓ Candidate Created Successfully!</p>
+              <p className="text-green-600 mt-2">Redirecting in a few seconds...</p>
             </div>
           )}
 
