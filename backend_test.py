@@ -368,6 +368,91 @@ class HiddenMonkeyAPITester:
         
         return False
 
+    def test_smart_parse_endpoint(self):
+        """Test /api/smart-parse endpoint for AI text extraction"""
+        print("\n🔍 Testing Smart Parse Endpoint...")
+        
+        if not self.token:
+            self.log_result("Smart Parse", False, "No auth token available")
+            return False
+        
+        try:
+            # Test data for Evan McCarthy as specified in bug report
+            parse_data = {
+                "raw_text": "My name is Evan McCarthy, I am 26 from Ireland. Phone: +918655299663. I can help with cleaning."
+            }
+            
+            response = requests.post(f"{self.api_base}/smart-parse", 
+                                   json=parse_data,
+                                   headers=self.get_auth_headers())
+            
+            if response.status_code == 200:
+                data = response.json()
+                extracted = data.get("extracted_data", {})
+                
+                # Check if AI extracted the expected data
+                if (extracted.get("name") and "Evan McCarthy" in extracted["name"] and
+                    extracted.get("phone") and "+918655299663" in extracted["phone"]):
+                    self.extracted_data = extracted  # Store for confirm test
+                    self.log_result("Smart Parse", True, 
+                                  f"AI extraction successful. Name: {extracted.get('name')}, Phone: {extracted.get('phone')}")
+                    return True
+                else:
+                    self.log_result("Smart Parse", False, 
+                                  f"AI extraction incomplete. Got: {extracted}")
+            else:
+                self.log_result("Smart Parse", False, 
+                              f"Failed: {response.text}", response.status_code)
+        except Exception as e:
+            self.log_result("Smart Parse", False, f"Exception: {str(e)}")
+        
+        return False
+
+    def test_smart_parse_confirm_endpoint(self):
+        """Test /api/smart-parse/confirm endpoint - the bug fix target"""
+        print("\n🔍 Testing Smart Parse Confirm Endpoint (Bug Fix Target)...")
+        
+        if not self.token:
+            self.log_result("Smart Parse Confirm", False, "No auth token available")
+            return False
+        
+        if not hasattr(self, 'extracted_data'):
+            self.log_result("Smart Parse Confirm", False, "No extracted data available - run smart parse first")
+            return False
+        
+        try:
+            # Use the extracted data from the previous test
+            # This tests the bug fix where email=None was causing issues
+            candidate_data = {
+                "name": self.extracted_data.get("name", "Evan McCarthy"),
+                "email": self.extracted_data.get("email"),  # This might be None - testing the bug fix
+                "phone": self.extracted_data.get("phone", "+918655299663"),
+                "age": self.extracted_data.get("age", 26),
+                "skills": ["cleaning"] if not self.extracted_data.get("skills") else self.extracted_data.get("skills"),
+                "property_name": "Test Property"
+            }
+            
+            response = requests.post(f"{self.api_base}/smart-parse/confirm", 
+                                   json=candidate_data,
+                                   headers=self.get_auth_headers())
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id"):
+                    self.smart_parse_candidate_id = data["id"]
+                    self.log_result("Smart Parse Confirm", True, 
+                                  f"Candidate created successfully. ID: {data['id']}")
+                    return True
+                else:
+                    self.log_result("Smart Parse Confirm", False, "No candidate ID in response")
+            else:
+                self.log_result("Smart Parse Confirm", False, 
+                              f"Failed: {response.text}", response.status_code)
+        except Exception as e:
+            self.log_result("Smart Parse Confirm", False, f"Exception: {str(e)}")
+        
+        return False
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("🚀 Starting Backend API Tests for Hidden Monkey Stays...")
