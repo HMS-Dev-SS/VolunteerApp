@@ -31,11 +31,12 @@ const SmartParse = () => {
     try {
       await axios.post(`${API}/smart-parse/confirm`, extractedData);
       setSuccess(true);
+      // Show success for 5 seconds before resetting
       setTimeout(() => {
         setRawText('');
         setExtractedData(null);
         setSuccess(false);
-      }, 2000);
+      }, 5000);
     } catch (err) {
       setError('Failed to create candidate');
     } finally {
