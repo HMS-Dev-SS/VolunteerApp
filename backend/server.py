@@ -293,7 +293,7 @@ async def confirm_smart_parse(candidate_data: dict, username: str = Depends(veri
     
     candidate = Candidate(
         name=candidate_data.get('name', 'Unknown'),
-        email=candidate_data.get('email', ''),
+        email=candidate_data.get('email') or '',  # Handle None
         phone=candidate_data.get('phone') or '',  # Handle None
         city=candidate_data.get('city') or None,
         start_date=date.fromisoformat(candidate_data['start_date']) if candidate_data.get('start_date') else None,
